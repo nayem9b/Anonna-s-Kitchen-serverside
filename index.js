@@ -19,8 +19,20 @@ console.log(
   uri
 );
 const client = new MongoClient(uri);
-const Product = client.db("practiceRun").collection("products");
+const services = client.db("Services").collection("foods");
 
+async function run() {
+  try {
+    app.get("/services", async (req, res) => {
+      const query = {};
+      const cursor = services.find(query);
+      const totalServices = await cursor.toArray();
+      res.send(totalServices);
+    });
+  } finally {
+  }
+}
+run();
 app.listen(port, () => {
   console.log(`port is running on ${port}`);
 });
