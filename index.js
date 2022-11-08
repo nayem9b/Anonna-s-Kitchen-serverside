@@ -49,6 +49,7 @@ async function run() {
     });
 
     app.get("/myreviews", async (req, res) => {
+      console.log(req.headers);
       let query = {};
       if (req.query.email) {
         query = {
@@ -56,6 +57,7 @@ async function run() {
         };
       }
       const cursor = reviews.find(query);
+      console.log(cursor);
       const myreviews = await cursor.toArray();
       res.send(myreviews);
     });
