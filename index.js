@@ -41,6 +41,12 @@ async function run() {
       const totalServices = await cursor.toArray();
       res.send(totalServices);
     });
+
+    app.post("/reviews", async (req, res) => {
+      const review = req.body;
+      const result = await reviews.insertOne(review);
+      res.send(result);
+    });
   } finally {
   }
 }
