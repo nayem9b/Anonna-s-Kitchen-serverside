@@ -21,6 +21,7 @@ console.log(
 const client = new MongoClient(uri);
 const services = client.db("Services").collection("foods");
 const reviews = client.db("Reviews").collection("foodReviews");
+const newServices = client.db("UserAddedServices").collection("addedServices");
 
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -81,6 +82,25 @@ async function run() {
       const myreviews = await cursor.toArray();
       res.send(myreviews);
     });
+    // added newService to show in homepage
+    app.get("/newservices", async (req, res) => {
+      let query = {};
+      if (req.query.email) {
+        query = {
+          email: req.query.email,
+        };
+      }
+      const cursor = newServices.find(query);
+      const myNewAddedService = await cursor.toArray();
+      res.send(myNewAddedService);
+    });
+    app.post("/newservices", async (req, res) => {
+      const newService = req.body;
+      const result = await newServices.insertOne(newService);
+
+      res.send(result);
+    });
+    // This section ends here
 
     app.delete("/myreviews/:id", async (req, res) => {
       const { id } = req.params;
