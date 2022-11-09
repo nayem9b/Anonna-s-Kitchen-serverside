@@ -23,12 +23,6 @@ const services = client.db("Services").collection("foods");
 const reviews = client.db("Reviews").collection("foodReviews");
 async function run() {
   try {
-    app.get("/services", async (req, res) => {
-      const query = {};
-      const cursor = services.find(query);
-      const totalServices = await cursor.toArray();
-      res.send(totalServices);
-    });
     app.get("/services/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
@@ -47,19 +41,27 @@ async function run() {
       const result = await reviews.insertOne(review);
       res.send(result);
     });
+    app.post("/services", async (req, res) => {
+      const service = req.body;
+      const result = await services.insertOne(service);
+      res.send(result);
+    });
 
     app.get("/myreviews", async (req, res) => {
-      console.log(req.headers);
       let query = {};
       if (req.query.email) {
         query = {
           email: req.query.email,
         };
       }
-      const cursor = reviews.find(query);
-      console.log(cursor);
       const myreviews = await cursor.toArray();
       res.send(myreviews);
+    });
+    app.get("/services", async (req, res) => {
+      const query = {};
+      const cursor = services.find(query);
+      const totalServices = await cursor.toArray();
+      res.send(totalServices);
     });
   } finally {
   }
