@@ -70,11 +70,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/myreviews", verifyJWT, async (req, res) => {
-      const decoded = req.decoded;
-      if (decoded.email !== req.query.email) {
-        res.status(403).send({ message: "unauthorized access" });
-      }
+    app.get("/myreviews", async (req, res) => {
       let query = {};
       if (req.query.email) {
         query = {
@@ -94,8 +90,28 @@ async function run() {
     app.get("/services", async (req, res) => {
       const query = {};
       const cursor = services.find(query);
+      const totalServices = await cursor.limit(3).toArray();
+      res.send(totalServices);
+    });
+    app.get("/allservices", async (req, res) => {
+      const query = {};
+      const cursor = services.find(query);
       const totalServices = await cursor.toArray();
       res.send(totalServices);
+    });
+
+    app.get("/myreviews/edit/:id", async (req, res) => {
+      const { id } = req.params;
+      const chosenReview = await reviews.findOne({ _id: ObjectId(id) });
+      res.send(chosenReview);
+    });
+
+    app.patch("/myreviews/edit/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await reviews.updateOne(
+        { _id: ObjectId(id) },
+        { $set: req.body }
+      );
     });
   } finally {
   }
