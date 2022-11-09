@@ -54,8 +54,15 @@ async function run() {
           email: req.query.email,
         };
       }
+      const cursor = reviews.find(query);
       const myreviews = await cursor.toArray();
       res.send(myreviews);
+    });
+
+    app.delete("/myreviews/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await reviews.deleteOne({ _id: ObjectId(id) });
+      res.send(result);
     });
     app.get("/services", async (req, res) => {
       const query = {};
