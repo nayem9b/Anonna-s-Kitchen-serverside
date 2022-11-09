@@ -39,19 +39,6 @@ function verifyJWT(req, res, next) {
 }
 async function run() {
   try {
-    app.get("/services/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) };
-      const service = await services.findOne(query);
-      res.send(service);
-    });
-    app.get("/reviews", async (req, res) => {
-      const query = { sname: "kodom" };
-      const cursor = reviews.find(query);
-      const totalServices = await cursor.toArray();
-      res.send(totalServices);
-    });
-
     // JWT
 
     app.post("/jwt", (req, res) => {
@@ -59,18 +46,37 @@ async function run() {
       const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "1d" });
       res.send({ token });
     });
-
-    app.post("/reviews", async (req, res) => {
-      const review = req.body;
-      const result = await reviews.insertOne(review);
-      res.send(result);
+    // Services are here
+    app.get("/services", async (req, res) => {
+      const query = {};
+      const cursor = services.find(query);
+      const totalServices = await cursor.limit(3).toArray();
+      res.send(totalServices);
+    });
+    app.get("/services/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const service = await services.findOne(query);
+      res.send(service);
     });
     app.post("/services", async (req, res) => {
       const service = req.body;
       const result = await services.insertOne(service);
       res.send(result);
     });
-
+    // All reviews are here
+    app.get("/reviews", async (req, res) => {
+      const query = {};
+      const cursor = reviews.find(query);
+      const totalServices = await cursor.toArray();
+      res.send(totalServices);
+    });
+    app.post("/reviews", async (req, res) => {
+      const review = req.body;
+      const result = await reviews.insertOne(review);
+      res.send(result);
+    });
+    // My added reviews start here
     app.get("/myreviews", async (req, res) => {
       let query = {};
       if (req.query.email) {
@@ -82,7 +88,26 @@ async function run() {
       const myreviews = await cursor.toArray();
       res.send(myreviews);
     });
-    // added newService to show in homepage
+
+    app.get("/myreviews/edit/:id", async (req, res) => {
+      const { id } = req.params;
+      const chosenReview = await reviews.findOne({ _id: ObjectId(id) });
+      res.send(chosenReview);
+    });
+
+    app.patch("/myreviews/edit/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await reviews.updateOne(
+        { _id: ObjectId(id) },
+        { $set: req.body }
+      );
+    });
+    app.delete("/myreviews/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await reviews.deleteOne({ _id: ObjectId(id) });
+      res.send(result);
+    });
+    // User added newService to the homepage
     app.get("/newservices", async (req, res) => {
       let query = {};
       if (req.query.email) {
@@ -102,36 +127,12 @@ async function run() {
     });
     // This section ends here
 
-    app.delete("/myreviews/:id", async (req, res) => {
-      const { id } = req.params;
-      const result = await reviews.deleteOne({ _id: ObjectId(id) });
-      res.send(result);
-    });
-    app.get("/services", async (req, res) => {
-      const query = {};
-      const cursor = services.find(query);
-      const totalServices = await cursor.limit(3).toArray();
-      res.send(totalServices);
-    });
+    // Get all Service Data
     app.get("/allservices", async (req, res) => {
       const query = {};
       const cursor = services.find(query);
       const totalServices = await cursor.toArray();
       res.send(totalServices);
-    });
-
-    app.get("/myreviews/edit/:id", async (req, res) => {
-      const { id } = req.params;
-      const chosenReview = await reviews.findOne({ _id: ObjectId(id) });
-      res.send(chosenReview);
-    });
-
-    app.patch("/myreviews/edit/:id", async (req, res) => {
-      const { id } = req.params;
-      const result = await reviews.updateOne(
-        { _id: ObjectId(id) },
-        { $set: req.body }
-      );
     });
   } finally {
   }
