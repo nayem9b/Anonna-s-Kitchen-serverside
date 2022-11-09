@@ -21,6 +21,21 @@ console.log(
 const client = new MongoClient(uri);
 const services = client.db("Services").collection("foods");
 const reviews = client.db("Reviews").collection("foodReviews");
+
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.JWT_SECRET, function (err, decoded) {
+    if (err) {
+      return res.status(403).send({ message: "Forbidden access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
 async function run() {
   try {
     app.get("/services/:id", async (req, res) => {
@@ -30,10 +45,18 @@ async function run() {
       res.send(service);
     });
     app.get("/reviews", async (req, res) => {
-      const query = {};
+      const query = { sname: "kodom" };
       const cursor = reviews.find(query);
       const totalServices = await cursor.toArray();
       res.send(totalServices);
+    });
+
+    // JWT
+
+    app.post("/jwt", (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "1d" });
+      res.send({ token });
     });
 
     app.post("/reviews", async (req, res) => {
@@ -47,7 +70,11 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/myreviews", async (req, res) => {
+    app.get("/myreviews", verifyJWT, async (req, res) => {
+      const decoded = req.decoded;
+      if (decoded.email !== req.query.email) {
+        res.status(403).send({ message: "unauthorized access" });
+      }
       let query = {};
       if (req.query.email) {
         query = {
