@@ -93,20 +93,20 @@ async function run() {
       res.send(myreviews);
     });
 
-    app.get("/myreviews/edit/:id", verifyJWT, async (req, res) => {
+    app.get("/myreviews/edit/:id", async (req, res) => {
       const { id } = req.params;
       const chosenReview = await reviews.findOne({ _id: ObjectId(id) });
       res.send(chosenReview);
     });
 
-    app.patch("/myreviews/edit/:id", verifyJWT, async (req, res) => {
+    app.patch("/myreviews/edit/:id", async (req, res) => {
       const { id } = req.params;
       const result = await reviews.updateOne(
         { _id: ObjectId(id) },
         { $set: req.body }
       );
     });
-    app.delete("/myreviews/:id", verifyJWT, async (req, res) => {
+    app.delete("/myreviews/:id", async (req, res) => {
       const { id } = req.params;
       const result = await reviews.deleteOne({ _id: ObjectId(id) });
       res.send(result);
